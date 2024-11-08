@@ -7,7 +7,7 @@ criar o arquivo .env na raiz do projeto com o seguinte conteúdo:
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=
-DB_DATABASE=chatbot
+DB_DATABASE=chatbotclube
 
 */
 export default async function conectar(){
@@ -17,8 +17,9 @@ export default async function conectar(){
     else{
         const pool = mysql.createPool({
             host: process.env.DB_HOST,
+            port:process.env.DB_PORT,
             user: process.env.DB_USER, 
-            password:process.env.DB_PASSWORD,  
+           
             database: process.env.DB_DATABASE,
             connectionLimit: 50,
             maxIdle: 30, // max idle connections, the default value is the same as `connectionLimit`

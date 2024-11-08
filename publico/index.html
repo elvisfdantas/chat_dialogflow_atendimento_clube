@@ -1,29 +1,70 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
+    
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página inicial da empresa</title>
-    <style>
-        df-messenger {
-         --df-messenger-bot-message: #878fac;
-         --df-messenger-button-titlebar-color: #df9b56;
-         --df-messenger-chat-background-color: #fafafa;
-         --df-messenger-font-color: white;
-         --df-messenger-send-icon: #878fac;
-         --df-messenger-user-message: #479b3d;
-        }
-      </style>
+    <title>Clube Esportivo</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-    <h1>Seja bem-vindo a nossa empresa!</h1>
+    
+       
+    <header>
+        <!--<img src="./img/logo.png" alt="Logo da Empresa" width="150" height="auto"> -->
+       
+        
+        <h1>Clube Esportivo</h1>
+        <nav>
+            <ul>
+                <li><a href="#home">Início</a></li>
+                <li><a href="#about">Sobre Nós</a></li>
+                <li><a href="#events">Eventos</a></li>
+                <li><a href="#contact">Contato</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <section id="home">
+            <h2>Bem-vindo ao Clube Esportivo</h2>
+            <p>Aqui no Clube Esportivo, oferecemos atividades para todos os amantes de esportes.</p>
+            <p>Se você não é sócio, não se preocupe. Aqui em nosso Clube, oferecemos a opção de alugar nossa estrutura, faça sua Reserva.  Junte-se a nós!</p>
+        </section>
+        
+        <section id="about">
+            <h2>Sobre Nós</h2>
+            <p>O Clube Esportivo foi fundado em 1900 e desde então tem sido um pilar da comunidade esportiva local.</p>
+        </section>
+        
+        <section id="events">
+            <h2>Eventos</h2>
+            <ul>
+                <li>Torneio de Futebol - 15 de Dezembro</li>
+                <li>Torneio de Tenis - 22 de Dezembro</li>
+                <li>Oficina de Férias - 5 de Janeiro</li>
+            </ul>
+        </section>
+        
+        <section id="contact">
+            <h2>Contato</h2>
+            <p>Email: contato@clube.com.br</p>
+            <p>Telefone: (18) 99999-9999</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Clube Esportivo. Todos os direitos reservados.</p>
+    </footer>
 </body>
+
 <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
 <df-messenger
   intent="WELCOME"
-  chat-title="SuporteTI"
-  agent-id="8bc3987c-612b-4ce9-8b41-e0df04f50eb6"
+  chat-title="ChatClube"
+  agent-id="c21c84b9-90e9-430b-8c27-60f33fcd5aab"
   language-code="pt-br"
-  chat-icon="/img/iconeChatBot.png"
+  chat-icon="./img/iconeChatBot.png"
 ></df-messenger>
 </html>

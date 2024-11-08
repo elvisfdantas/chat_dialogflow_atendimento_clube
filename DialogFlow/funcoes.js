@@ -1,4 +1,4 @@
-import Servico from "../Model/Servico.js";
+import Servico from "../Model/Local.js";
 
 export function criarMessengerCard(){
     return {
@@ -50,7 +50,7 @@ export async function obterCardsServicos(tipoCard="custom"){
                                   Prazo para solução: ${servico.tempoSolucao}
                                  `;
             card.card.imageUri = servico.urlImagem;
-            card.card.buttons[0].postback = "https://www.zendesk.com.br/";
+            card.card.buttons[0].postback = "https://www.clube.com.br/";
         }
         else{
             card = criarMessengerCard();
@@ -61,7 +61,7 @@ export async function obterCardsServicos(tipoCard="custom"){
                              Prazo para solução: ${servico.tempoSolucao}
                             `;
             card.image.src.rawUrl = servico.urlImagem;
-            card.actionLink = "https://www.zendesk.com.br/";
+            card.actionLink = "https://www.clube.com.br/";
         }
 
         listaCardsServicos.push(card);

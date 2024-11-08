@@ -1,6 +1,6 @@
-import Servico from "../Model/Servico.js";
+import Local from "../Model/Local.js";
 
-export default class ServicoCtrl {
+export default class LocalCtrl {
     //traduzir comandos http em ações negociais
     //Conceito REST 
     //Considerar o protocolo HTTP 
@@ -10,24 +10,19 @@ export default class ServicoCtrl {
             requisicao.is("application/json")) {
             const dados = requisicao.body;
             //pseudo validação
-            if (dados.nome && dados.descricao && dados.valor >= 0 &&
-                dados.urlImagem && dados.tempoInicioAtendimento > 0 &&
-                dados.tempoSolucao > 0) {
-                const servico = new Servico(0, dados.nome, dados.descricao,
-                    dados.valor, dados.urlImagem,
-                    dados.tempoInicioAtendimento,
-                    dados.tempoSolucao);
+            if (dados.nome) {
+                const local = new Local(0,dados.nome);
 
-                servico.gravar().then(() => {
+                local.gravar().then(() => {
                     resposta.status(201).json({
                         "status": true,
-                        "mensagem": "Serviço gravado com sucesso!",
-                        "id": servico.id
+                        "mensagem": "Local gravada com sucesso!",
+                        "id": local.id
                     });
                 }).catch((erro) => {
                     resposta.status(500).json({
                         "status": false,
-                        "mensagem": "Erro ao registrar o serviço: " + erro.message,
+                        "mensagem": "Erro ao registrar o local: " + erro.message,
                     });
                 })
             }
@@ -53,23 +48,18 @@ export default class ServicoCtrl {
             && requisicao.is("application/json")) {
             const dados = requisicao.body;
             //pseudo validação
-            if (dados.id > 0 && dados.nome && dados.descricao && dados.valor >= 0 &&
-                dados.urlImagem && dados.tempoInicioAtendimento > 0 &&
-                dados.tempoSolucao > 0) {
-                const servico = new Servico(dados.id, dados.nome, dados.descricao,
-                    dados.valor, dados.urlImagem,
-                    dados.tempoInicioAtendimento,
-                    dados.tempoSolucao);
+            if (dados.id > 0 && dados.nome) {
+                const local = new Local(dados.id, dados.nome);
 
-                servico.alterar().then(() => {
+                local.alterar().then(() => {
                     resposta.status(200).json({
                         "status": true,
-                        "mensagem": "Serviço alterado com sucesso!",
+                        "mensagem": "Local alterado com sucesso!",
                     });
                 }).catch((erro) => {
                     resposta.status(500).json({
                         "status": false,
-                        "mensagem": "Erro ao alterar o serviço: " + erro.message,
+                        "mensagem": "Erro ao alterar o local: " + erro.message,
                     });
                 })
             }
@@ -93,17 +83,17 @@ export default class ServicoCtrl {
             const id = requisicao.params.id; //o id deve ser informado na url
             //pseudo validação
             if (id > 0) {
-                const servico = new Servico(id);
+                const local = new Local(id);
 
-                servico.excluir().then(() => {
+                local.excluir().then(() => {
                     resposta.status(200).json({
                         "status": true,
-                        "mensagem": "Serviço excluído com sucesso!",
+                        "mensagem": "Local excluído com sucesso!",
                     });
                 }).catch((erro) => {
                     resposta.status(500).json({
                         "status": false,
-                        "mensagem": "Erro ao excluir o serviço: " + erro.message,
+                        "mensagem": "Erro ao excluir o local: " + erro.message,
                     });
                 })
             }
@@ -123,18 +113,19 @@ export default class ServicoCtrl {
     }
 
     consultar(requisicao, resposta) {
-        const termoBusca = requisicao.params.servico;
+        const termoBusca = requisicao.params.local;
         if (requisicao.method == "GET") {
-            const servico = new Servico(0);
-            servico.consultar(termoBusca).then((listaServicos) => {
+            const local = new Local(0);
+            local.consultar(termoBusca).then((listaLocal) => {
                 resposta.status(200).json({
                     "status": true,
-                    "listaServicos": listaServicos
+                    "listaLocal": listaLocal
                 });
             }).catch((erro) => {
+                console.error(erro)
                 resposta.status(500).json({
                     "status": false,
-                    "mensagem": "Não foi possível recuperar os serviços: " + erro.message,
+                    "mensagem": "Não foi possível recuperar os locais: " + erro.message,
                 });
             })
         }

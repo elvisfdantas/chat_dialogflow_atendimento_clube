@@ -1,5 +1,5 @@
 {
-  "name": "backendchatbotti",
+  "name": "backendchatbotclube",
   "version": "1.0.0",
   "description": "Backend Webhook para meu agente do DialogFlow",
   "main": "index.js",
@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RenatoFernandoSilvaGoncalves/backendChatBotTI.git"
+    "url": "git+https://github.com/elvisfdantas/backendchatbotclube.git"
   },
   "author": "Renato Gonçalves",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/RenatoFernandoSilvaGoncalves/backendChatBotTI/issues"
+    "url": "https://github.com/elvisfdantas/backendchatbotclube/issues"
   },
-  "homepage": "https://github.com/RenatoFernandoSilvaGoncalves/backendChatBotTI#readme",
+  "homepage": "https://github.com/elvisfdantas/backendChatBotclube#readme",
   "dependencies": {
     "dotenv": "^16.4.5",
     "express": "^4.21.1",

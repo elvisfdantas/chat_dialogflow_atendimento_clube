@@ -1,6 +1,8 @@
+import AgendamentoDAO from "../DB/AgendamentoDAO.js";
 import { obterCardsServicos } from "../DialogFlow/funcoes.js";
-import Chamado from "../Model/Chamado.js";
-import Servico from "../Model/Servico.js";
+import Agendamento from "../Model/Agendamento.js";
+import Chamado from "../Model/Agendamento.js";
+import Local from "../Model/Local.js";
 
 export default class DFController {
 
@@ -17,17 +19,19 @@ export default class DFController {
                     resposta = await exibirMenu(origem);
                     break;
 
-                case 'SelecaoSuporte':
+                case 'SelecaoLocal':
                     resposta = await processarEscolha(dados, origem);
                     break;
-                /*
-                case 'coletaDadosDemandante':
-                    resposta = await identificarUsuario(dados, origem);
+                
+                case 'dataAgendamento':
+                    resposta = await salvarDataAgendamento(dados, origem);
                     break;
-                */
-                case 'simConcluirDemanda':
-                    resposta = await registrarChamado(dados, origem);
+                
+                case 'ColetaDadosSocios':
+                    resposta = await registrarLocal(dados, origem);
                     break;
+                case 'acompanhamentoReserva':
+                    resposta = await consultarReserva(dados, origem)    
 
             }
             resp.json(resposta);
@@ -52,9 +56,10 @@ async function exibirMenu(tipo = '') {
         if (tipo == 'custom') {
             resposta['fulfillmentMessages'].push({
                 "text": {
-                    "text": ["Seja bem-vindo ao suporte de TI.\n",
-                        "Estamos disponíveis 24h por dia e 7 dias na semana.\n",
-                        "Estamos preparados para te ajudar com os seguintes serviços:\n"
+                    "text": ["Seja bem-vindo ao Atendimento do Clube.\n",
+                        "Nosso horário de atendimento é de segunda a sexta-feira  das 08h00 as 22h00.\n",
+                        "Sábado das 08hs as 22h00 e domingo das 14h00 as 20h00.\n",
+                        "Estamos preparados para te ajudar com os seguintes atendimentos:\n"
                     ]
                 }
             });
@@ -73,10 +78,11 @@ async function exibirMenu(tipo = '') {
                 "payload": {
                     "richContent": [[{
                         "type": "description",
-                        "title": "Seja bem-vindo ao suporte de TI.\n",
+                        "title": "Seja bem-vindo ao Atendimento do Clube.\n",
                         "text": [
-                            "Estamos disponíveis 24h por dia e 7 dias na semana.\n",
-                            "Estamos preparados para te ajudar com os seguintes serviços:\n"
+                            "Nosso horário de atendimento é de segunda a sexta-feira  das 08h00 as 22h00.\n",
+                            "Sábado das 08hs as 22h00 e domingo das 14h00 as 20h00.\n",
+                            "Estamos preparados para te ajudar com os seguintes atendimentos:\n"
                         ]
                     }]]
                 }
@@ -93,12 +99,13 @@ async function exibirMenu(tipo = '') {
         }
     }
     catch (erro) {
+        console.error(erro)
         if (tipo == 'custom') {
             resposta['fulfillmentMessages'].push({
                 "text": {
-                    "text": ["Não foi possível recuperar a lista de suporte dos serviços disponíveis.",
+                    "text": ["Não foi possível recuperar a lista dos serviços disponíveis.",
                         "Descupe-nos pelo transtorno!",
-                        "Entre em contato conosco por telefone ☎ (18) 3226-1515."
+                        "Entre em contato conosco por telefone ☎ (18) 3265-0000."
                     ]
                 }
             });
@@ -108,10 +115,10 @@ async function exibirMenu(tipo = '') {
                 "payload": {
                     "richContent": [[{
                         "type": "description",
-                        "title": "Não foi possível recuperar a lista de suporte dos serviços disponíveis.\n",
+                        "title": "Não foi possível recuperar a lista dos serviços disponíveis. \n",
                         "text": [
                             "Descupe-nos pelo transtorno!\n",
-                            "Entre em contato conosco por telefone ☎ (18) 3226-1515.\n"
+                            "Entre em contato conosco por telefone ☎ (18) 3265-1010.\n"
                         ]
                     }]]
                 }
@@ -129,30 +136,38 @@ async function processarEscolha(dados, origem) {
     };
 
     const sessao = dados.session.split('/').pop();
-    if (!global.dados) {
-        global.dados = {};
+    
+    if (!global.dados[sessao].locais) {
+        global.dados[sessao].locais = []
     }
-    if (!global.dados[sessao]) {
-        global.dados[sessao] = {
-            'servicos': [],
-        };
-    }
-    let servicosSelecionados = dados.queryResult.parameters.Servico
-    global.dados[sessao]['servicos'].push(...servicosSelecionados);
+    
+    let locaisSelecionados = dados.queryResult.parameters.Local
+    
 
     let listaMensagens = [];
-    for (const serv of servicosSelecionados) {
-        const servico = new Servico();
-        const resultado = await servico.consultar(serv);
+    for (const localSelecionado of locaisSelecionados) {
+        const local = new Local();
+        const resultado = await local.consultar(localSelecionado);
         if (resultado.length > 0) {
-            listaMensagens.push(`✅ ${serv} registrado com sucesso! \n`);
+            let data = global.dados[sessao].data
+            local.id=resultado[0].id
+            local.nome=resultado[0].nome
+            const reservado = await local.reservado(data)
+            if (reservado){
+                listaMensagens.push(`❌ ${local} Esse local já esta reservado! \n`);
+            }
+            else{
+                global.dados[sessao]['locais'].push(local);
+                listaMensagens.push(`✅ ${local} registrado com sucesso! \n`);
+            }
+                    
         }
         else {
-            listaMensagens.push(`❌ O ${serv} não está disponível!\n`);
+            listaMensagens.push(`❌ O ${local} não existe!\n`);
         }
     }
 
-    listaMensagens.push('Posso te ajudar em algo mais?\n')
+    listaMensagens.push('Quer reservar outro local?\n')
 
     if (origem) {
         resposta['fulfillmentMessages'].push({
@@ -176,25 +191,29 @@ async function processarEscolha(dados, origem) {
     return resposta;
 }
 
-async function registrarChamado(dados, origem) {
+async function registrarLocal(dados, origem) {
     const sessao = dados.session.split('/').pop();
     //Fique atento, será necessário recuperar o usuário identificado na sessão
     //simulando a existência de um usuário cadastrado....
     const usuario = {
-        "cpf": "111.111.111-11"
+        "cpf": "1231.456.789-10"
     }
-    let listaDeServicos = [];
-    const servicosSelecionados = global.dados[sessao]['servicos'];
-    const servicoM = new Servico();
-    for (const serv of servicosSelecionados) {
-        const busca = await servicoM.consultar(serv);
+    let listaDeLocal = [];
+    const locaisSelecionados = global.dados[sessao]['locais'];
+    let data = global.dados[sessao].data
+    const localM = new Local();
+    for (const local of locaisSelecionados) {
+        const busca = await localM.consultar(local.nome);
         if (busca.length > 0) {
-            listaDeServicos.push(busca[0]); //primeiro serviço da lista 
+            listaDeLocal.push(busca[0]); //primeiro serviço da lista 
         }
     }
-    const chamado = new Chamado(0, '', usuario, listaDeServicos);
-    await chamado.gravar();
-
+    let nome = dados.queryResult.parameters.Nome
+    let telefone = dados.queryResult.parameters.Telefone
+    let endereco = dados.queryResult.parameters.Endereco
+    const agendamento = new Agendamento(0, Date.now(), data, nome.name, telefone, endereco, listaDeLocal);
+    await agendamento.gravar();
+    global.dados[sessao]['locais'] = [];
     let resposta = {
         "fulfillmentMessages": []
     };
@@ -202,7 +221,7 @@ async function registrarChamado(dados, origem) {
     if (origem) {
         resposta['fulfillmentMessages'].push({
             "text": {
-                "text": [`Chamado nº ${chamado.numero} registrado com sucesso. \n`,
+                "text": [`Agendamento nº ${agendamento.id} registrado com sucesso. \n`,
                     "Anote o número para consulta ou acompanhamento posterior.\n"
                 ]
             }
@@ -214,7 +233,7 @@ async function registrarChamado(dados, origem) {
                 "richContent": [[{
                     "type": "description",
                     "title": "",
-                    "text": [`Chamado nº ${chamado.numero} registrado com sucesso. \n`,
+                    "text": [`Agendamento nº ${agendamento.id} registrado com sucesso. \n`,
                         "Anote o número para consulta ou acompanhamento posterior.\n"
                     ]
                 }]]
@@ -223,4 +242,85 @@ async function registrarChamado(dados, origem) {
     }
     return resposta;
 
+}
+async function salvarDataAgendamento(dados, origem) {
+    
+        let listaMensagens = []
+        let resposta = {
+            "fulfillmentMessages": []
+        };
+    
+        const sessao = dados.session.split('/').pop();
+        if (!global.dados) {
+            global.dados = {};
+        }
+        if (!global.dados[sessao]) {
+            global.dados[sessao] = {
+                'data':null
+            };
+        }
+        let dataAgendamento = dados.queryResult.parameters.data
+        global.dados[sessao]['data'] = dataAgendamento;
+        listaMensagens.push('Blz! Agora informa o Local\n')
+
+        if (origem) {
+            resposta['fulfillmentMessages'].push({
+                "text": {
+                    "text": [...listaMensagens]
+                }
+            })
+        }
+        else {
+            resposta.fulfillmentMessages.push({
+                "payload": {
+                    "richContent": [[{
+                        "type": "description",
+                        "title": "",
+                        "text": [...listaMensagens]
+                    }]]
+                }
+            });
+        }
+    
+        return resposta;
+}
+async function consultarReserva(dados, origem) {
+    
+    let listaMensagens = []
+    let resposta = {
+        "fulfillmentMessages": []
+    };
+    let numero = dados.queryResult.parameters.numero
+    const agendamentoDAO = new AgendamentoDAO()
+    const agendamento = await agendamentoDAO.consultar(numero)
+    if (agendamento){
+        listaMensagens.push("Segue os detalhes sobre sua reserva:")
+        listaMensagens.push("Número reserva: " + numero)
+        listaMensagens.push("Data reserva: " + agendamento.dataagendamento.toLocaleDateString('pt-br'))
+        listaMensagens.push("Locais reservados: " + agendamento.locais.reduce((a, c)=> a + c.nome + ' - ', [] ))
+
+    }
+    else{
+        listaMensagens.push("Não existe um agendamento com esse número")
+    }
+    if (origem) {
+        resposta['fulfillmentMessages'].push({
+            "text": {
+                "text": [...listaMensagens]
+            }
+        })
+    }
+    else {
+        resposta.fulfillmentMessages.push({
+            "payload": {
+                "richContent": [[{
+                    "type": "description",
+                    "title": "",
+                    "text": [...listaMensagens]
+                }]]
+            }
+        });
+    }
+
+    return resposta;
 }
